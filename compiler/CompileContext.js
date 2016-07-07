@@ -54,6 +54,7 @@ class CompileContext {
         this.src = src;
         this.filename = filename;
         this.builder = builder;
+        this.metadata = {};
 
         this.dirname = path.dirname(filename);
         this.taglibLookup = taglibLookup.buildLookup(this.dirname);

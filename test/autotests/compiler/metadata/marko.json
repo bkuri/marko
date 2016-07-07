@@ -1,0 +1,5 @@
+{
+    "<test-meta>": {
+        "transformer":"./tags/test-meta/transformer.js"
+    }
+}

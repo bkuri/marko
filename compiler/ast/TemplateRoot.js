@@ -19,6 +19,7 @@ class TemplateRoot extends Node {
 
     generateCode(codegen) {
         var context = codegen.context;
+        var metadata = context.metadata;
 
         var body = this.body;
         codegen.addStaticVar('str', '__helpers.s');
@@ -46,7 +47,8 @@ class TemplateRoot extends Node {
                 returnStatement(
                     functionDeclaration('render', ['data', 'out'], body))
             ]),
-            '(module.exports = require("marko").c(__filename)).c(create)'
+            '(module.exports = require("marko").c(__filename)).c(create)',
+            this.getMetaComment(metadata)
         ]);
 
         codegen.generateCode(outputNode);
@@ -65,6 +67,16 @@ class TemplateRoot extends Node {
 
         var vars = context.getVars();
         varsSlot.setContent(builder.vars(createVarsArray(vars)));
+    }
+
+    getMetaComment(metadata) {
+        var hasMeta = Object.keys(metadata).length > 0;
+        if(!hasMeta) return '';
+
+        return '/*\n<@marko-metadata>' +
+            JSON.stringify(metadata, null, 2)
+                .replace(/^\{|\}$/g, '') +
+        '</marko-metadata>\n*/\n';
     }
 
     toJSON(prettyPrinter) {

@@ -5,6 +5,7 @@ var chai = require('chai');
 chai.config.includeStack = true;
 var path = require('path');
 var compiler = require('../compiler');
+var loader = require('../runtime/loader')
 var autotest = require('./autotest');
 var fs = require('fs');
 
@@ -41,6 +42,10 @@ describe('compiler', function() {
         } else {
             var compiledSrc = compiler.compileFile(templatePath);
             helpers.compare(compiledSrc, '.js');
+            if(main && main.checkTemplate) {
+                var template = loader.loadSource(templatePath, compiledSrc);
+                main.checkTemplate(template);
+            }
             done();
         }
     });

@@ -70,7 +70,28 @@ function loadSource(templatePath, compiledSrc) {
         compiledSrc,
         templateModulePath);
 
+    templateModule.exports.metadata = parseTemplateMetaData(compiledSrc);
+
     return templateModule.exports;
+}
+
+function requireWithMeta(targetFile) {
+    var template = require(targetFile);
+    var compiledSrc = fs.readFileSync(targetFile);
+    var metadata = parseTemplateMetaData(compiledSrc);
+
+    template.metadata = metadata;
+
+    return template;
+}
+
+function parseTemplateMetaData(src) {
+    var pattern = /<@marko-metadata>([\s\S]*)<\/marko-metadata>/;
+    var match = pattern.exec(src);
+
+    if(!match) return {};
+
+    return JSON.parse('{'+match[1]+'}');
 }
 
 function getLoadedTemplate(path) {
@@ -103,14 +124,14 @@ function loadFile(templatePath, options) {
     // if it exists
     if (options.assumeUpToDate) {
         if (fs.existsSync(targetFile)) {
-            return require(targetFile);
+            return requireWithMeta(targetFile);
         }
     }
 
     var isUpToDate = markoCompiler.checkUpToDate(targetFile);
 
     if (isUpToDate) {
-        return require(targetFile);
+        return requireWithMeta(targetFile);
     }
 
 	var compiledSrc = markoCompiler.compileFile(templatePath, options);
@@ -123,7 +144,7 @@ function loadFile(templatePath, options) {
     fs.writeFileSync(tempFile, compiledSrc, fsReadOptions);
     fs.renameSync(tempFile, targetFile);
 
-    return require(targetFile);
+    return requireWithMeta(targetFile);
 }
 
 module.exports = function load(templatePath, templateSrc, options) {
